@@ -1,8 +1,8 @@
 cabal-version:      3.0
 name:               cfg-hs
 version:            0.1.0
-synopsis:           A simple dotfile manager written in Haskell using Dhall
-description:        A simple dotfile manager written in Haskell using Dhall
+synopsis:           A Haskell tool to create control flow graphs for progamming languages
+description:        A Haskell tool to create control flow graphs for progamming languages
 homepage:           https://github.com/sondr3/cfg-hs
 bug-reports:        https://github.com/sondr3/cfg-hs/issues
 license:            (MIT OR Apache-2.0)
