@@ -1,4 +1,4 @@
-module CFG.OperationSpec (spec) where
+module CFG.PythonParser (spec) where
 
 import Test.Hspec
 

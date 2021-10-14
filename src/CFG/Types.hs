@@ -2,7 +2,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module CFG.Types where
+module CFG.Types (AST (..)) where
 
 import Data.Text (Text)
 import Data.Typeable (Typeable)

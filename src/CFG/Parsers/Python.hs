@@ -1,9 +1,6 @@
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TypeFamilies #-}
+module CFG.Parsers.Python (parseFile, parseInput) where
 
-module CFG.Parsers.Python where
-
+import CFG.Parsers.Parser (Parser, ParserError (..))
 import CFG.Types (AST (Class, Fun))
 import Control.Monad (void)
 import Data.Text (Text)
@@ -11,13 +8,6 @@ import qualified Data.Text as T
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
-
-newtype ParserError = Unimplemented Text deriving newtype (Show, Eq, Ord)
-
-instance ShowErrorComponent ParserError where
-  showErrorComponent (Unimplemented text) = T.unpack text <> " is not implemented"
-
-type Parser = Parsec ParserError Text
 
 sc :: Parser ()
 sc = L.space space1 (L.skipLineComment "#") (L.skipBlockComment "\"\"\"" "\"\"\"")
@@ -41,8 +31,23 @@ pDefine cls sym kind = do
   skipToEol ":" <?> "End of " <> kind
   return $ cls name
 
+pClass :: Parser AST
+pClass = pDefine Class "class " "class"
+
 pFunction :: Parser AST
 pFunction = pDefine Fun "def " "function"
 
-pClass :: Parser AST
-pClass = pDefine Class "class " "class"
+pExpr :: Parser AST
+pExpr = pClass <|> pFunction
+
+-- pExpr :: FilePath -> Text
+parseAst :: String -> Text -> Either ParserError AST
+parseAst file input = case runParser pExpr file input of
+  Right out -> Right out
+  Left err -> Left $ ParserError (T.pack $ errorBundlePretty err)
+
+parseInput :: Text -> Either ParserError AST
+parseInput = parseAst "file"
+
+parseFile :: String -> Text -> Either ParserError AST
+parseFile = parseAst

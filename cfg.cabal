@@ -58,7 +58,11 @@ flag dev
 library
   import:          config, library
   exposed-modules: CFG
-  other-modules: CFG.Parsers.Python
+  other-modules: 
+    CFG.Parsers.Parser
+    CFG.Parsers.Python
+    CFG.Languages
+    CFG.Types
 
   hs-source-dirs:  src
 
@@ -77,7 +81,7 @@ test-suite cfg-hs-test
   type:               exitcode-stdio-1.0
   hs-source-dirs:     test
   main-is:            Spec.hs
-  -- other-modules:      CFG.OperationSpec
+  other-modules:      CFG.PythonParser
   build-tool-depends: hspec-discover:hspec-discover ^>=2.8
   build-depends:
     , cfg-hs
