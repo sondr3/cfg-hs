@@ -3,7 +3,7 @@
 module CFG.Parsers.Python where
 
 import CFG.Parsers.Parser (Parser, ParserError (..))
-import CFG.Types (AST (Class, Fun))
+import CFG.Types (AST (..))
 import Control.Monad (void)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -24,27 +24,35 @@ symbol = L.symbol sc
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 
+keyword :: Text -> Parser Text
+keyword p = (lexeme . try) $ string p <* space
+
 skipToEol :: Parser Text -> Parser ()
 skipToEol end = void (manyTill anySingle end <* eol)
 
 pClass :: Parser AST
 pClass = do
-  void (try $ symbol "class ") <?> "Class"
-  name <- dbg "class" (takeWhile1P Nothing (\x -> x `notElem` [':', '('])) <?> "Class name"
-  skipToEol ":" <|> skipToEol "" <?> "End of class"
-  return $ Class name
+  void (keyword "class") <?> "Class"
+  name <- takeWhile1P Nothing (\x -> x `notElem` [':', '(']) <?> "Class name"
+  (skipToEol ":" <|> skipToEol "") <?> "End of class"
+  Class name <$> pTryExpr <* eof
 
 pFunction :: Parser AST
 pFunction = do
-  void (try $ symbol "fun ") <?> "Function"
+  void (keyword "def") <?> "Function"
   name <- takeWhile1P Nothing (/= '(') <?> "Function name"
   skipToEol ":" <?> "End of function"
-  return $ Fun name
+  Fun name <$> pTryExpr <* eof
+
+pNone :: Parser AST
+pNone = pure None
+
+pTryExpr :: Parser AST
+pTryExpr = choice (map (try . (space *>)) [pClass, pFunction, pNone]) <* eof
 
 pExpr :: Parser AST
 pExpr = pClass <|> pFunction
 
--- pExpr :: FilePath -> Text
 parseAst :: String -> Text -> Either ParserError AST
 parseAst file input = case runParser pExpr file input of
   Right out -> Right out

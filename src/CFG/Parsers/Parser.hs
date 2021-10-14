@@ -6,7 +6,7 @@ module CFG.Parsers.Parser (ParserError (..), Parser) where
 
 import Data.Text (Text)
 import qualified Data.Text as T
-import Text.Megaparsec
+import Text.Megaparsec (Parsec, ShowErrorComponent (showErrorComponent))
 
 newtype ParserError = ParserError Text deriving newtype (Show, Eq, Ord)
 

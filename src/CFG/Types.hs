@@ -7,6 +7,7 @@ import Data.Text (Text)
 import Data.Typeable (Typeable)
 
 data AST
-  = Fun Text
-  | Class Text
+  = Fun Text AST
+  | Class Text AST
+  | None
   deriving stock (Show, Typeable)
