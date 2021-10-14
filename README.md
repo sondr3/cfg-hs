@@ -1,5 +1,3 @@
-# cfg-hs ![pipeline](https://github.com/sondr3/cfg-hs/workflows/pipeline/badge.svg)
-
 <h1 align="center">cfg-hs</h1>
 
 <p align="center">
