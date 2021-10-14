@@ -1,4 +1,6 @@
-module CFG.Parsers.Python (parseFile, parseInput) where
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
+
+module CFG.Parsers.Python where
 
 import CFG.Parsers.Parser (Parser, ParserError (..))
 import CFG.Types (AST (Class, Fun))
@@ -8,6 +10,7 @@ import qualified Data.Text as T
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
+import Text.Megaparsec.Debug (dbg)
 
 sc :: Parser ()
 sc = L.space space1 (L.skipLineComment "#") (L.skipBlockComment "\"\"\"" "\"\"\"")
@@ -24,18 +27,19 @@ parens = between (symbol "(") (symbol ")")
 skipToEol :: Parser Text -> Parser ()
 skipToEol end = void (manyTill anySingle end <* eol)
 
-pDefine :: (Text -> AST) -> Text -> String -> Parser AST
-pDefine cls sym kind = do
-  void (try $ symbol sym) <?> kind
-  name <- takeWhile1P Nothing (/= '(') <?> kind <> " name"
-  skipToEol ":" <?> "End of " <> kind
-  return $ cls name
-
 pClass :: Parser AST
-pClass = pDefine Class "class " "class"
+pClass = do
+  void (try $ symbol "class ") <?> "Class"
+  name <- dbg "class" (takeWhile1P Nothing (\x -> x `notElem` [':', '('])) <?> "Class name"
+  skipToEol ":" <|> skipToEol "" <?> "End of class"
+  return $ Class name
 
 pFunction :: Parser AST
-pFunction = pDefine Fun "def " "function"
+pFunction = do
+  void (try $ symbol "fun ") <?> "Function"
+  name <- takeWhile1P Nothing (/= '(') <?> "Function name"
+  skipToEol ":" <?> "End of function"
+  return $ Fun name
 
 pExpr :: Parser AST
 pExpr = pClass <|> pFunction
