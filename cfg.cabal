@@ -58,7 +58,7 @@ flag dev
 library
   import:          config, library
   exposed-modules: CFG
-  -- other-modules:
+  other-modules: CFG.Parsers.Python
 
   hs-source-dirs:  src
 
