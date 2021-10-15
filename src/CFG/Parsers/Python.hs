@@ -3,7 +3,7 @@
 module CFG.Parsers.Python where
 
 import CFG.Parsers.Parser (Parser, ParserError (..))
-import CFG.Types (AST (..))
+import CFG.Types (AST (..), Name (Name), Type (Type))
 import Control.Monad (void)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -32,23 +32,23 @@ skipToEol end = void (manyTill anySingle end <* eol)
 
 pClass :: Parser AST
 pClass = do
-  void (keyword "class") <?> "Class"
-  name <- takeWhile1P Nothing (\x -> x `notElem` [':', '(']) <?> "Class name"
+  kind <- Type <$> keyword "class" <?> "Class"
+  name <- Name <$> takeWhile1P Nothing (\x -> x `notElem` [':', '(']) <?> "Class name"
   (skipToEol ":" <|> skipToEol "") <?> "End of class"
-  Class name <$> pTryExpr <* eof
+  Object name kind <$> pTryExpr <* eof
 
 pFunction :: Parser AST
 pFunction = do
-  void (keyword "def") <?> "Function"
-  name <- takeWhile1P Nothing (/= '(') <?> "Function name"
+  kind <- Type <$> keyword "def" <?> "Function"
+  name <- Name <$> takeWhile1P Nothing (/= '(') <?> "Function name"
   skipToEol ":" <?> "End of function"
-  Fun name <$> pTryExpr <* eof
+  Object name kind <$> pTryExpr <* eof
 
 pNone :: Parser AST
-pNone = pure None
+pNone = pure Ignored
 
-pTryExpr :: Parser AST
-pTryExpr = choice (map (try . (space *>)) [pClass, pFunction, pNone]) <* eof
+pTryExpr :: Parser [AST]
+pTryExpr = try $ some pExpr <* eof
 
 pExpr :: Parser AST
 pExpr = pClass <|> pFunction
